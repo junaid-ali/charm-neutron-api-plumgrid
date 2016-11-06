@@ -83,6 +83,7 @@ def config_changed():
     CONFIGS.write_all()
     if not service_running('neutron-server'):
         service_start('neutron-server')
+    status_set('active', 'Unit is ready')
 
 
 @hooks.hook('neutron-plugin-api-relation-joined')
