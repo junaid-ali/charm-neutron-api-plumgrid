@@ -58,10 +58,16 @@ BASE_RESOURCE_MAP = OrderedDict([
     }),
 ])
 
-NETWORKING_PLUMGRID_VERSION = OrderedDict([
-    ('kilo', '2015.1.1.1'),
-    ('liberty', '2015.2.1.1'),
-    ('mitaka', '2016.1.1.1'),
+# PG-ONS 6.X.X
+NETWORKING_PLUMGRID_PIP_VERSION = OrderedDict([
+    ('kilo', '2015.1.5.4'),
+    ('liberty', '2015.2.6.4'),
+    ('mitaka', '2016.1.6.4'),
+])
+NETWORKING_PLUMGRID_DEB_VERSION = OrderedDict([
+    ('kilo', '2015.1.5.4'),
+    ('liberty', '2015.2.6.4'),
+    ('mitaka', '2016.1.6.4.xenial1'),
 ])
 
 
@@ -93,7 +99,11 @@ def determine_packages():
             tag = config('plumgrid-build')
         elif (pkg == 'networking-plumgrid' and
               config('enable-deb-networking-install')):
-            tag = config('networking-build')
+            if config('networking-build'):
+                tag = config('networking-build')
+            else:
+                release = os_release('neutron-common', base='kilo')
+                tag = NETWORKING_PLUMGRID_DEB_VERSION[release]
         if tag == 'latest':
             pkgs.append(pkg)
         elif tag:
@@ -173,10 +183,10 @@ def install_networking_plumgrid():
     '''
     Installs networking-plumgrid package
     '''
+    release = os_release('neutron-common', base='kilo')
     if not config('enable-deb-networking-install'):
-        release = os_release('neutron-common', base='kilo')
         if config('networking-plumgrid-version') is None:
-            package_version = NETWORKING_PLUMGRID_VERSION[release]
+            package_version = NETWORKING_PLUMGRID_PIP_VERSION[release]
         else:
             package_version = config('networking-plumgrid-version')
         package_name = 'networking-plumgrid==%s' % package_version
@@ -187,7 +197,9 @@ def install_networking_plumgrid():
         if is_leader() and package_version != '2015.1.1.1':
             migrate_neutron_db()
     else:
-        apt_install('networking-plumgrid', options=['--force-yes'], fatal=True)
+        apt_install('networking-plumgrid=%s' %
+                    NETWORKING_PLUMGRID_DEB_VERSION[release],
+                    options=['--force-yes'], fatal=True)
         if is_leader():
             migrate_neutron_db()
 

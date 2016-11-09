@@ -17,10 +17,12 @@ options:
     description: |
        Provide the build version of plumgrid-pythonlib package that needs to be installed
   networking-build:
-    default: 'latest'
     type: string
+    default:
     description: |
-       Provide the build version of networking-plumgrid package that needs to be installed
+       Provide the build version of networking-plumgrid package that needs to be installed.
+       Accepted values are either 'latest' (which installs latest networking-plumgrid
+       package available) or a specific version for the package.
   networking-plumgrid-version:
     default: null
     type: string
